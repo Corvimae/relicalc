@@ -1,7 +1,8 @@
 import { applyCombatStages, calculateLGPEStat, calculateStat } from './stats';
 import { NatureType, NATURE_MODIFIERS } from './nature';
-import { Generation, StatRange } from './reference';
+import { Generation, StatRange, IVRange, IVRangeNatureSet } from './reference';
 import { formatDamageRange } from './utils/format';
+import { range } from './utils/utils';
 
 /**
  * Calculate the possible damage values that a move can roll.
@@ -24,7 +25,7 @@ export function calculateDamageValues(
   preRandModifiers: number[],
   postRandModifiers: number[],
 ): number[] {
-  return [...Array(16).keys()].map(randomValue => {
+  return range(0, 15).map(randomValue => {
     const levelModifier = Math.trunc((2 * level) / 5) + 2;
     const adjustedPower = basePowerModifiers.reduce((acc, modifier) => Math.trunc(acc * modifier), power);
     const baseDamage = Math.trunc(Math.floor((levelModifier * adjustedPower * attack) / defense) / 50) + 2;
@@ -112,7 +113,7 @@ export function calculateDamageRanges({
   if (!offensiveMode && !opponentLevel) throw new Error('opponentLevel parameter is required when offensiveMode is false');
 
   return NATURE_MODIFIERS.map(natureModifierData => {
-    const possibleStats = [...Array(32).keys()].map(possibleIV => {
+    const possibleStats = range(0, 31).map(possibleIV => {
       if (generation === 'lgpe') {
         if (!friendship) throw new Error('friendship parameter is required when generation is lgpe');
         return calculateLGPEStat(level, baseStat, possibleIV, evs, natureModifierData.modifier, friendship);
@@ -213,14 +214,9 @@ export function mergeStatRanges(a: IVRange | undefined, b: IVRange): IVRange {
   };
 }
 
-export type IVRange = { from: number; to: number; };
-
-interface StatIVDefinition {
+interface StatIVDefinition extends IVRangeNatureSet {
   statFrom: number;
   statTo: number;
-  negative?: IVRange;
-  neutral?: IVRange;
-  positive?: IVRange;
 }
 
 export type CompactRange = DamageRange & StatIVDefinition

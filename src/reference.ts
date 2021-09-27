@@ -1,4 +1,4 @@
-export type Generation = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 'lgpe';
+export type Generation = number | 'lgpe';
 
 export const STATS = ['hp', 'attack', 'defense', 'spAttack', 'spDefense', 'speed'] as const;
 
@@ -14,14 +14,25 @@ export interface StatLine {
 }
 
 export interface IVRangeSet {
-  negative: [number, number] | null,
-  neutral: [number, number] | null,
-  positive: [number, number] | null,
-  combined: [number, number] | null,
+  negative: [number, number],
+  neutral: [number, number],
+  positive: [number, number],
+  combined: [number, number],
 }
 
 export interface StatRange {
   stat: number;
   from: number;
   to: number;
+}
+
+export interface IVRange {
+  from: number;
+  to: number;
+}
+
+export interface IVRangeNatureSet {
+  negative?: IVRange;
+  neutral?: IVRange;
+  positive?: IVRange;
 }

@@ -5,3 +5,5 @@ export * from './hiddenPower';
 export * from './ivRanges';
 export * from './pokemonTypes';
 export * from './stats';
+export * from './nature';
+export * from './reference';

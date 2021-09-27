@@ -1,5 +1,5 @@
 import { ConfirmedNature, determinePossibleNatureTypesForStat, getPossibleNatureAdjustmentsForStat, NatureType, NATURE_MODIFIERS } from './nature';
-import { Generation, IVRangeSet, Stat, StatRange } from './reference';
+import { Generation, IVRangeSet, Stat, IVRange, IVRangeNatureSet } from './reference';
 import { calculateGen1Stat, calculateHP, calculateStat } from './stats';
 import { range, rangesOverlap } from './utils/utils';
 
@@ -22,20 +22,20 @@ function calculatePossibleStatValuesForNature(
   minIV: number,
   maxIV: number,
   ev: number,
-  possibleModifiers: number[],
+  modifier: number,
   generation: Generation,
 ): StatValuePossibilitySet {
-  const possibleValues = range(0, 31).flatMap(iv => (
-    possibleModifiers.map(modifier => calculateStatOrHP(stat, level, baseStat, iv, ev, modifier, generation))
+  const possibleValues = range(0, 31).map(iv => (
+    calculateStatOrHP(stat, level, baseStat, iv, ev, modifier, generation)
   ));
 
-  const validValues = range(minIV, maxIV).flatMap(iv => (
-    possibleModifiers.map(modifier => calculateStatOrHP(stat, level, baseStat, iv, ev, modifier, generation))
+  const validValues = range(minIV, maxIV).map(iv => (
+    calculateStatOrHP(stat, level, baseStat, iv, ev, modifier, generation)
   ));
 
   return {
-    possible: [...new Set(possibleValues)],
-    valid: [...new Set(validValues)],
+    possible: Array.from(new Set(possibleValues)),
+    valid: Array.from(new Set(validValues)),
   };
 }
 
@@ -64,7 +64,7 @@ export function calculateAllPossibleStatValues(
   let relevantModifiers = stat === 'hp' ? [NATURE_MODIFIERS[1]] : NATURE_MODIFIERS;
 
   const possibleNatureTypes = determinePossibleNatureTypesForStat(stat, confirmedNature);
-  
+
   relevantModifiers = relevantModifiers.filter(item => possibleNatureTypes.indexOf(item.key) !== -1);
 
   return relevantModifiers.reduce<StatValuePossibilitySet>((combinedSet, { key, modifier }) => {
@@ -79,7 +79,7 @@ export function calculateAllPossibleStatValues(
       values[0],
       values[1],
       evs,
-      [modifier],
+      modifier,
       generation,
     );
 
@@ -170,20 +170,14 @@ export function calculatePossibleIVRange(
   };
 }
 
-export function isIVWithinValues(calculatedValue: StatRange, ivRange: [number, number] | null): boolean {
+export function isIVWithinValues(calculatedValue: IVRange | undefined, ivRange: [number, number] | null): boolean {
   if (!calculatedValue) return false;
 
   return rangesOverlap([calculatedValue.from, calculatedValue.to], ivRange ?? [-1, -1]);
 }
 
-export interface CombinedIVResult {
-  negative: StatRange;
-  neutral: StatRange;
-  positive: StatRange
-}
-
 export function isIVWithinRange(
-  damageResult: CombinedIVResult,
+  damageResult: IVRangeNatureSet,
   [confirmedNegative, confirmedPositive]: ConfirmedNature,
   stat: Stat,
   ivRanges: IVRangeSet,

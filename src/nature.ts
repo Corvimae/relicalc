@@ -178,14 +178,14 @@ export function calculatePossibleNature(
   options: CalculatePossibleNatureOptions = {},
 ): ConfirmedNature {
   const confirmedNegative = options.negativeNatureStat ? [options.negativeNatureStat] : (
-    Object.entries(ivRanges).find(([stat, value]) => stat !== 'hp' && value.positive === null && value.neutral === null)
+    Object.entries(ivRanges).find(([stat, value]) => stat !== 'hp' && value.positive[0] === -1 && value.neutral[0] === -1)
   );
   const confirmedPositive = options?.positiveNatureStat ? [options.positiveNatureStat] : (
-    Object.entries(ivRanges).find(([stat, value]) => stat !== 'hp' && value.negative === null && value.neutral == null)
+    Object.entries(ivRanges).find(([stat, value]) => stat !== 'hp' && value.negative[0] === -1 && value.neutral[0] === -1)
   );
 
-  const possibleNegatives = Object.entries(ivRanges).filter(([stat, value]) => stat !== 'hp' && value.negative === null);
-  const possiblePositives = Object.entries(ivRanges).filter(([stat, value]) => stat !== 'hp' && value.positive === null);
+  const possibleNegatives = Object.entries(ivRanges).filter(([stat, value]) => stat !== 'hp' && value.negative[0] !== -1);
+  const possiblePositives = Object.entries(ivRanges).filter(([stat, value]) => stat !== 'hp' && value.positive[0] !== -1);
 
   if (possibleNegatives.length === 0 || possiblePositives.length === 0) return ['attack', 'attack'];
 
@@ -203,9 +203,9 @@ export function getPossibleNatureAdjustmentsForStat(
   stat: Stat,
   [confirmedNegative, confirmedPositive]: ConfirmedNature,
 ): [boolean, boolean, boolean] {
-  const isNegativeValid = rangeSet.negative === null;
-  const isNeutralValid = rangeSet.neutral === null;
-  const isPositiveValid = rangeSet.positive === null;
+  const isNegativeValid = rangeSet.negative[0] !== -1;
+  const isNeutralValid = rangeSet.neutral[0] !== -1;
+  const isPositiveValid = rangeSet.positive[0] !== -1;
 
   if (confirmedPositive === stat && confirmedNegative !== stat) return [false, false, true];
   if (confirmedNegative === stat && confirmedPositive !== stat) return [true, false, false];
@@ -230,4 +230,11 @@ export function filterByPossibleNatureAdjustmentsForStat<T>(
     neutral ? values[1] : undefined,
     positive ? values[2] : undefined,
   ].filter(value => value !== undefined) as T[];
+}
+
+export function getNatureMultiplier(stat: Stat, nature: NatureDefinition): number {
+  if (nature.plus === stat && nature.minus !== stat) return 1.1;
+  if (nature.minus === stat && nature.plus !== stat) return 0.9;
+
+  return 1;
 }

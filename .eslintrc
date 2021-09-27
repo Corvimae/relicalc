@@ -19,7 +19,6 @@
     }
   },
   "rules": {
-    "react/prop-types": "off",
     "max-len": "off",
     "import/prefer-default-export": "off",
     "import/extensions": [

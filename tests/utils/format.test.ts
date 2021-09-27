@@ -31,40 +31,40 @@ describe('formatDamageRange', () => {
 
 describe('formatIVRange', () => {
   test('from 0 to 31', () => {
-    expect(formatIVRange({ from: 0, to: 31, stat: -1 })).toBe('0+');
+    expect(formatIVRange({ from: 0, to: 31 })).toBe('0+');
   });
   
   test('only 0', () => {
-    expect(formatIVRange({ from: 0, to: 0, stat: -1 })).toBe('0');
+    expect(formatIVRange({ from: 0, to: 0 })).toBe('0');
   });
 
   test('from 0 to 10', () => {
-    expect(formatIVRange({ from: 0, to: 10, stat: -1 })).toBe('10-');
+    expect(formatIVRange({ from: 0, to: 10 })).toBe('10-');
   });
 
   test('only 31', () => {
-    expect(formatIVRange({ from: 31, to: 31, stat: -1 })).toBe('31');
+    expect(formatIVRange({ from: 31, to: 31 })).toBe('31');
   });
 
   test('from 10 to 31', () => {
-    expect(formatIVRange({ from: 10, to: 31, stat: -1 })).toBe('10+');
+    expect(formatIVRange({ from: 10, to: 31 })).toBe('10+');
   });
 
   test('only 10', () => {
-    expect(formatIVRange({ from: 10, to: 10, stat: -1 })).toBe('10');
+    expect(formatIVRange({ from: 10, to: 10 })).toBe('10');
   });
 
   test('from 10 to 20', () => {
-    expect(formatIVRange({ from: 10, to: 20, stat: -1 })).toBe('10–20');
+    expect(formatIVRange({ from: 10, to: 20 })).toBe('10–20');
   });
 });
 
 describe('formatIVSplit', () => {
   test('formats each segment correctly', () => {
     expect(formatIVSplit({
-      negative: { from: 30, to: 31, stat: -1 },
-      neutral: { from: 6, to: 21, stat: -1 },
-      positive: { from: 0, to: 5, stat: -1 },
+      negative: { from: 30, to: 31 },
+      neutral: { from: 6, to: 21 },
+      positive: { from: 0, to: 5 },
     })).toBe('30+ / 6–21 / 5-');
   });
 });
