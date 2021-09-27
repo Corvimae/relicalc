@@ -1,4 +1,4 @@
-import { CartesianProduct } from 'js-combinatorics/umd/combinatorics';
+import { CartesianProduct } from 'js-combinatorics';
 import { ConfirmedNature } from './nature';
 import { TypeName } from './pokemonTypes';
 import { IVRangeSet, Stat } from './reference';
