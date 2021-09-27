@@ -1,5 +1,5 @@
 import { ConfirmedNature, determinePossibleNatureTypesForStat, getPossibleNatureAdjustmentsForStat, NatureType, NATURE_MODIFIERS } from './nature';
-import { CombinedIVResult, Generation, IVRangeSet, Stat, StatRange } from './reference';
+import { Generation, IVRangeSet, Stat, StatRange } from './reference';
 import { calculateGen1Stat, calculateHP, calculateStat } from './stats';
 import { range, rangesOverlap } from './utils/utils';
 
@@ -174,6 +174,12 @@ export function isIVWithinValues(calculatedValue: StatRange, ivRange: [number, n
   if (!calculatedValue) return false;
 
   return rangesOverlap([calculatedValue.from, calculatedValue.to], ivRange ?? [-1, -1]);
+}
+
+export interface CombinedIVResult {
+  negative: StatRange;
+  neutral: StatRange;
+  positive: StatRange
 }
 
 export function isIVWithinRange(

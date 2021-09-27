@@ -1,6 +1,6 @@
 import { applyCombatStages, calculateLGPEStat, calculateStat } from './stats';
 import { NatureType, NATURE_MODIFIERS } from './nature';
-import { CombinedIVResult, Generation, StatRange } from './reference';
+import { Generation, StatRange } from './reference';
 import { formatDamageRange } from './format';
 
 /**
@@ -35,12 +35,14 @@ export function calculateDamageValues(
   });
 }
 
-export interface RangeResult extends StatRange {
+interface DamageRange {
   damageValues: number[];
   damageRangeOutput: string;
   minDamage: number;
   maxDamage: number;
 }
+
+export type RangeResult = DamageRange & StatRange;
 
 export interface DamageRangeNatureResult {
   name: string;
@@ -51,7 +53,7 @@ function getMultiTargetModifier(generation: Generation): number {
   return generation === 3 ? 0.5 : 0.75;
 }
 
-export interface CalculateDamageRangesParameters {
+interface AllCalculateDamageRangesParameters {
   level: number;
   baseStat: number;
   evs: number;
@@ -75,32 +77,44 @@ export interface CalculateDamageRangesParameters {
   otherPowerModifier: number;
 }
 
+export type CalculateDamageRangesParameters = Partial<AllCalculateDamageRangesParameters>;
+
 export function calculateDamageRanges({
   level,
   baseStat,
   evs,
-  combatStages,
+  combatStages = 0,
   stab,
-  typeEffectiveness,
-  offensiveMode,
+  typeEffectiveness = 1,
+  offensiveMode = true,
   movePower,
-  criticalHit,
-  torrent,
-  multiTarget,
-  weatherBoosted,
-  weatherReduced,
+  criticalHit = false,
+  torrent = false,
+  multiTarget = false,
+  weatherBoosted = false,
+  weatherReduced = false,
   generation,
-  otherModifier,
+  otherModifier = 1,
   opponentLevel,
   opponentStat,
-  opponentCombatStages,
+  opponentCombatStages = 0,
   friendship,
-  screen,
-  otherPowerModifier,
+  screen = false,
+  otherPowerModifier = 1,
 }: CalculateDamageRangesParameters): DamageRangeNatureResult[] {
+  if (!level) throw new Error('level parameter is required.');
+  if (!baseStat) throw new Error('baseStat parameter is required');
+  if (!evs) throw new Error('evs parameter is required');
+  if (!opponentStat) throw new Error('opponentStat parameter is required');
+  if (!generation) throw new Error('generation parameter is required');
+  if (!movePower) throw new Error('movePower parameter is required');
+
+  if (!offensiveMode && !opponentLevel) throw new Error('opponentLevel parameter is required when offensiveMode is false');
+
   return NATURE_MODIFIERS.map(natureModifierData => {
     const possibleStats = [...Array(32).keys()].map(possibleIV => {
       if (generation === 'lgpe') {
+        if (!friendship) throw new Error('friendship parameter is required when generation is lgpe');
         return calculateLGPEStat(level, baseStat, possibleIV, evs, natureModifierData.modifier, friendship);
       }
       return calculateStat(level, baseStat, possibleIV, evs, natureModifierData.modifier);
@@ -148,7 +162,7 @@ export function calculateDamageRanges({
         const screenModifier = screen && !criticalHit ? baseScreenMultiplier : 1;
 
         const damageValues = calculateDamageValues(
-          offensiveMode ? level : opponentLevel,
+          offensiveMode ? level : (opponentLevel ?? 0),
           torrent && generation <= 4 ? movePower * 1.5 : movePower,
           torrent && generation >= 5 ? offensiveStat * 1.5 : offensiveStat,
           defensiveStat,
@@ -189,16 +203,27 @@ export function calculateDamageRanges({
   });
 }
 
-export function mergeStatRanges(a: StatRange | undefined, b: StatRange): StatRange {
+export function mergeStatRanges(a: IVRange | undefined, b: IVRange): IVRange {
   if (!a) return b;
   if (!b) return a;
 
   return {
-    stat: -1,
     from: Math.min(a.from, b.from),
     to: Math.max(a.to, b.to),
   };
 }
+
+export type IVRange = { from: number; to: number; };
+
+interface StatIVDefinition {
+  statFrom: number;
+  statTo: number;
+  negative?: IVRange;
+  neutral?: IVRange;
+  positive?: IVRange;
+}
+
+export type CompactRange = DamageRange & StatIVDefinition
 
 export function combineIdenticalLines(results: DamageRangeNatureResult[]): Record<string, CompactRange> {
   const [negative, neutral, positive] = results;
@@ -214,6 +239,8 @@ export function combineIdenticalLines(results: DamageRangeNatureResult[]): Recor
             ...currentValue,
             damageValues: result.damageValues,
             damageRangeOutput: result.damageRangeOutput,
+            minDamage: Math.min(...result.damageValues),
+            maxDamage: Math.max(...result.damageValues),
             statFrom: currentValue?.statFrom ?? result.stat,
             statTo: Math.max(result.stat, acc[result.damageRangeOutput]?.statTo ?? 0),
             [key]: {
@@ -227,17 +254,8 @@ export function combineIdenticalLines(results: DamageRangeNatureResult[]): Recor
     ), {});
 }
 
-type CombinedRangeResult = RangeResult & CombinedIVResult;
-
-export interface CompactRange extends CombinedRangeResult {
-  statFrom: number;
-  statTo: number;
-}
-
-export interface OneShotResult extends CombinedIVResult {
+export interface OneShotResult extends StatIVDefinition {
   successes: number;
-  statFrom: number;
-  statTo: number;
   componentResults: CompactRange[];
 }
 
@@ -253,9 +271,9 @@ export function calculateKillRanges(results: DamageRangeNatureResult[], healthTh
           successes,
           statFrom: Math.min(currentValue?.statFrom || Number.MAX_VALUE, result.statFrom),
           statTo: Math.max(currentValue?.statTo || Number.MIN_VALUE, result.statTo),
-          negative: mergeStatRanges(currentValue?.negative, result.negative),
-          neutral: mergeStatRanges(currentValue?.neutral, result.neutral),
-          positive: mergeStatRanges(currentValue?.positive, result.positive),
+          negative: mergeStatRanges(currentValue?.negative, result.negative ?? { from: -1, to: -1 }),
+          neutral: mergeStatRanges(currentValue?.neutral, result.neutral ?? { from: -1, to: -1 }),
+          positive: mergeStatRanges(currentValue?.positive, result.positive ?? { from: -1, to: -1 }),
           componentResults: [
             ...(currentValue?.componentResults || []),
             result,

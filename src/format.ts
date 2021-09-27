@@ -11,7 +11,7 @@ export function formatDamageRange(values: number[]): string {
   const lowExtreme = firstValue !== secondValue && firstValue;
   const highExtreme = secondToLastValue !== lastValue && lastValue;
 
-  return `${lowExtreme ? `(${lowExtreme}) / ` : ''} ${secondValue === secondToLastValue ? secondValue : `${secondValue}–${secondToLastValue}`} ${highExtreme ? `/ (${highExtreme})` : ''}`;
+  return `${lowExtreme ? `(${lowExtreme}) / ` : ''}${secondValue === secondToLastValue ? secondValue : `${secondValue}–${secondToLastValue}`}${highExtreme ? ` / (${highExtreme})` : ''}`;
 }
 
 export function formatIVRange(value: StatRange): string {

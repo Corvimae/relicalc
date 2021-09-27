@@ -25,9 +25,3 @@ export interface StatRange {
   from: number;
   to: number;
 }
-
-export interface CombinedIVResult {
-  negative: StatRange;
-  neutral: StatRange;
-  positive: StatRange
-}

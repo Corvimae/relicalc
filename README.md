@@ -2,13 +2,13 @@
 
 ![a relicanth lookin' fly](https://cdn2.bulbagarden.net/upload/thumb/7/78/369Relicanth.png/500px-369Relicanth.png)
 
-relicalc is [Ranger](https://github.com/corvimae/pokemon-ranger)'s calculation code as a standalone Node (12+) library. It has all the math-y stuff from Ranger without any of that pesky UI nonsense, including:
+relicalc is [Ranger](https://github.com/corvimae/pokemon-ranger)'s Pokémon math calculation code as a standalone Node (12+) library. It has all the math-y stuff from Ranger without any of that pesky UI nonsense, including:
 
-- Calculate possible damage rolls for a move across all possible IVs.
-- Determine possible IVs given the value of a stat at previous levels.
-- Calculate experience gained from an encounter.
-- Determine possible Hidden Power base damage and type based on possible IVs.
-- Build combined type defensive typing tables.
+- Calculating possible damage rolls for a move across all possible IVs.
+- Determining possible IVs given the value of a stat at previous levels.
+- Calculating experience gained from an encounter.
+- Determining possible Hidden Power base damage and type based on possible IVs.
+- Building combined type defensive typing tables.
 
 ...for all generations including Let's Go<sup>[1](#f1)</sup>.
 
