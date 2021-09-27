@@ -72,7 +72,7 @@ function calculatePossibleStatValuesForNature(
  *
  * @param stat - The name of the stat to calculate.
  * @param level - The current level of the Pokémon.
- * @param ivRanges - The calculated IV range set from previously entered stats.
+ * @param ivRanges - The calculated IV range set for the relevant stat as calculated from previously entered stats.
  * @param confirmedNature - Any confirmed negative or positive nature data.
  * @param baseStat - The base stat of the Pokémon.
  * @param evs - The effort value of the Pokémon for the stat at the current level.
@@ -82,7 +82,7 @@ function calculatePossibleStatValuesForNature(
 export function calculateAllPossibleStatValues(
   stat: Stat,
   level: number,
-  ivRanges: Record<Stat, IVRangeSet>,
+  ivRanges: IVRangeSet,
   confirmedNature: ConfirmedNature,
   baseStat: number,
   evs: number,
@@ -94,8 +94,8 @@ export function calculateAllPossibleStatValues(
 
   relevantModifiers = relevantModifiers.filter(item => possibleNatureTypes.indexOf(item.key) !== -1);
 
-  return relevantModifiers.reduce<StatValuePossibilitySet>((combinedSet, { key, modifier }) => {
-    const values = ivRanges[stat][key];
+  const { possible, valid } = relevantModifiers.reduce<StatValuePossibilitySet>((combinedSet, { key, modifier }) => {
+    const values = ivRanges[key];
 
     if (!values) return combinedSet;
 
@@ -115,6 +115,11 @@ export function calculateAllPossibleStatValues(
       valid: [...combinedSet.valid, ...calculatedValues.valid],
     };
   }, { possible: [], valid: [] } as StatValuePossibilitySet);
+
+  return {
+    possible: Array.from(new Set(possible)),
+    valid: Array.from(new Set(valid)),
+  };
 }
 
 interface CalculatePossibleIVRangeOptions {

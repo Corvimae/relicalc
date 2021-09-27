@@ -1,4 +1,4 @@
-import { formatDamageRange, formatIVRange, formatIVSplit, formatStatRange } from '../../src/utils/format';
+import { formatDamageRange, formatIVRange, formatIVRangeSet, formatStatRange } from '../../src/utils/format';
 
 describe('formatDamageRange', () => {
   test('with low extreme and no high extreme', () => {
@@ -59,9 +59,9 @@ describe('formatIVRange', () => {
   });
 });
 
-describe('formatIVSplit', () => {
+describe('formatIVRangeSet', () => {
   test('formats each segment correctly', () => {
-    expect(formatIVSplit({
+    expect(formatIVRangeSet({
       negative: { from: 30, to: 31 },
       neutral: { from: 6, to: 21 },
       positive: { from: 0, to: 5 },

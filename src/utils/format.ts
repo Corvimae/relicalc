@@ -26,7 +26,7 @@ export function formatIVRange(value: IVRange | undefined): string {
   return `${value.from}–${value.to}`;
 }
 
-export function formatIVSplit(values: IVRangeNatureSet): string {
+export function formatIVRangeSet(values: IVRangeNatureSet): string {
   return `${formatIVRange(values.negative)} / ${formatIVRange(values.neutral)} / ${formatIVRange(values.positive)}`;
 }
 
