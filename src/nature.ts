@@ -1,4 +1,4 @@
-import { capitalize } from './format';
+import { capitalize } from './utils/format';
 import { IVRangeSet, Stat } from './reference';
 
 export type ConfirmedNature = [Stat | null, Stat | null];

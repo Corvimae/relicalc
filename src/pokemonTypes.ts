@@ -175,7 +175,7 @@ export function getDefensiveEffectivenesses(type: TypeName | null, generation: G
       if (type === 'poison') chart = moveEffectivenessTo(chart, 'bug', 'x2');
       if (type === 'bug') chart = moveEffectivenessTo(chart, 'poison', 'x2');
       if (type === 'psychic') chart = moveEffectivenessTo(chart, 'ghost', 'x0');
-      if (type === 'fire') chart = moveEffectivenessTo(chart, 'ice', 'half');
+      if (type === 'fire') chart = moveEffectivenessTo(chart, 'ice', null);
     }
   }
 

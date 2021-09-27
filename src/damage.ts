@@ -1,7 +1,7 @@
 import { applyCombatStages, calculateLGPEStat, calculateStat } from './stats';
 import { NatureType, NATURE_MODIFIERS } from './nature';
 import { Generation, StatRange } from './reference';
-import { formatDamageRange } from './format';
+import { formatDamageRange } from './utils/format';
 
 /**
  * Calculate the possible damage values that a move can roll.
@@ -104,7 +104,7 @@ export function calculateDamageRanges({
 }: CalculateDamageRangesParameters): DamageRangeNatureResult[] {
   if (!level) throw new Error('level parameter is required.');
   if (!baseStat) throw new Error('baseStat parameter is required');
-  if (!evs) throw new Error('evs parameter is required');
+  if (evs === undefined || evs === null) throw new Error('evs parameter is required');
   if (!opponentStat) throw new Error('opponentStat parameter is required');
   if (!generation) throw new Error('generation parameter is required');
   if (!movePower) throw new Error('movePower parameter is required');
@@ -225,10 +225,10 @@ interface StatIVDefinition {
 
 export type CompactRange = DamageRange & StatIVDefinition
 
-export function combineIdenticalLines(results: DamageRangeNatureResult[]): Record<string, CompactRange> {
+export function combineIdenticalLines(results: DamageRangeNatureResult[]): CompactRange[] {
   const [negative, neutral, positive] = results;
 
-  return (Object.entries({ negative, neutral, positive }) as [NatureType, DamageRangeNatureResult][])
+  const segments = (Object.entries({ negative, neutral, positive }) as [NatureType, DamageRangeNatureResult][])
     .reduce<Record<string, CompactRange>>((output, [key, { rangeSegments }]) => (
       rangeSegments.reduce((acc, result) => {
         const currentValue = acc[result.damageRangeOutput];
@@ -252,6 +252,8 @@ export function combineIdenticalLines(results: DamageRangeNatureResult[]): Recor
         };
       }, output)
     ), {});
+
+  return Object.values(segments).sort((a, b) => a.statFrom - b.statFrom);
 }
 
 export interface OneShotResult extends StatIVDefinition {

@@ -1,4 +1,4 @@
-import { Stat, StatRange } from './reference';
+import { Stat, StatRange } from '../reference';
 
 export function formatDamageRange(values: number[]): string {
   const firstValue = values[0];
