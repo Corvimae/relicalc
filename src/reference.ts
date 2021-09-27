@@ -13,10 +13,17 @@ export interface StatLine {
   speed: number;
 }
 
+/**
+ * The possible IVs for each nature modifier given the previously entered stats.
+ */
 export interface IVRangeSet {
+  /** The possible IVs for a negative nature. */
   negative: [number, number],
+  /** The possible IVs for a neutral nature. */
   neutral: [number, number],
+  /** The possible IVs for a positive nature. */
   positive: [number, number],
+  /** The lowest and highest IV possible across all possible natures. */
   combined: [number, number],
 }
 

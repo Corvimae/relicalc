@@ -55,31 +55,58 @@ function getMultiTargetModifier(generation: Generation): number {
 }
 
 interface AllCalculateDamageRangesParameters {
+  /** The level of the owned Pokémon. */
   level: number;
+  /** The base stat of the owned Pokémon. */
   baseStat: number;
+  /** The effort value of the relevant stat of the owned Pokémon. */
   evs: number;
+  /** The number of combat stages in the relevant stat for the owned Pokémon. */
   combatStages: number;
+  /** Is the attacker benefitting from the same-type attack bonus? */
   stab: boolean;
+  /** The type effectiveness multiplier of the move. */
   typeEffectiveness: number;
+  /** Is the owned Pokémon attacking? */
   offensiveMode: boolean;
+  /** The base power of the move. */
   movePower: number;
+  /** Did the move critical hit? */
   criticalHit: boolean;
+  /** Is the attacker affected by Torrent, Overgrow, or Blaze? */
   torrent: boolean;
+  /** Does the move target more than one Pokémon and is the encounter a double or triple battle? */
   multiTarget: boolean;
+  /** Is the move's damage boosted by the weather? */
   weatherBoosted: boolean;
+  /** Is the move's damage reduced by the weather? */
   weatherReduced: boolean;
+  /** The generation damage formula to use. */
   generation: Generation;
+  /** An additional multiplier to apply at the end of the calculation. */
   otherModifier: number;
+  /** The level of the opponent Pokémon. */
   opponentLevel: number;
+  /** The value of opponent Pokémon's relevant stat  */
   opponentStat: number;
+  /** The number of combat stages the opponent Pokémon has in the relevant stat */
   opponentCombatStages: number;
+  /** The friendship of the Pokémon (only relevant for LGPE). */
   friendship: number;
+  /** Is the defender protected by a screen move? */
   screen: boolean;
+  /** An additional multiplier to apply to the base power of the move. */
   otherPowerModifier: number;
 }
 
 export type CalculateDamageRangesParameters = Partial<AllCalculateDamageRangesParameters>;
 
+/**
+ * Calculate the set of possible damage values dealt by a move for every possible IV.
+ *
+ * @param options - The configuration for the damage calculation.
+ * @returns A list of possible damage rolls for every possible IV.
+ */
 export function calculateDamageRanges({
   level,
   baseStat,
@@ -204,7 +231,7 @@ export function calculateDamageRanges({
   });
 }
 
-export function mergeStatRanges(a: IVRange | undefined, b: IVRange): IVRange {
+function mergeStatRanges(a: IVRange | undefined, b: IVRange): IVRange {
   if (!a) return b;
   if (!b) return a;
 
@@ -221,6 +248,12 @@ interface StatIVDefinition extends IVRangeNatureSet {
 
 export type CompactRange = DamageRange & StatIVDefinition
 
+/**
+ * Combine identical sets of possible damage roll values into a range of values.
+ *
+ * @param results - The results of a damage calculation.
+ * @returns The compact ranges of possible rolls.
+ */
 export function combineIdenticalLines(results: DamageRangeNatureResult[]): CompactRange[] {
   const [negative, neutral, positive] = results;
 
@@ -253,10 +286,20 @@ export function combineIdenticalLines(results: DamageRangeNatureResult[]): Compa
 }
 
 export interface OneShotResult extends StatIVDefinition {
+  /** The number of rolls that succeed to knock out the opponent in one hit. */
   successes: number;
+  /** The list of compacted ranges that share the same likeliness to one-hit knockout. */
   componentResults: CompactRange[];
 }
 
+/**
+ * Determine the number of values that succeed to knock out the opponent in one hit for each
+ * possible damage result and combine them by matching success count.
+ *
+ * @param results - The results of a damage calculation.
+ * @param healthThreshold - The total health of the defender.
+ * @returns The compacted one-hit knockout range data.
+ */
 export function calculateKillRanges(results: DamageRangeNatureResult[], healthThreshold: number): Record<number, OneShotResult> {
   return Object.values(combineIdenticalLines(results))
     .reduce<Record<number, OneShotResult>>((acc, result) => {
