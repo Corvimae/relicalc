@@ -2,7 +2,7 @@
 
 ![a relicanth lookin' fly](https://cdn2.bulbagarden.net/upload/thumb/7/78/369Relicanth.png/500px-369Relicanth.png)
 
-relicalc is [Ranger](https://github.com/corvimae/pokemon-ranger)'s calculation code as a standalone Node library. It has all the math-y stuff from Ranger without any of that pesky UI nonsense, including:
+relicalc is [Ranger](https://github.com/corvimae/pokemon-ranger)'s calculation code as a standalone Node (12+) library. It has all the math-y stuff from Ranger without any of that pesky UI nonsense, including:
 
 - Calculate possible damage rolls for a move across all possible IVs.
 - Determine possible IVs given the value of a stat at previous levels.
