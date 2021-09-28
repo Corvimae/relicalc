@@ -15,7 +15,7 @@ export function formatDamageRange(values: number[]): string {
 }
 
 export function formatIVRange(value: IVRange | undefined): string {
-  if (!value) return 'x';
+  if (!value || value.from === -1 || value.to === -1) return 'x';
   if (value.from === 0 && value.to === 31) return '0+';
 
   if (value.from === 0) return `${value.to}${value.to === 0 ? '' : '-'}`;

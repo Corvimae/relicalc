@@ -1,3 +1,4 @@
+import { CartesianProduct, Combination } from 'js-combinatorics';
 import { applyCombatStages, calculateLGPEStat, calculateStat } from './stats';
 import { NatureType, NATURE_MODIFIERS } from './nature';
 import { Generation, StatRange, IVRange, IVRangeNatureSet } from './reference';
@@ -322,4 +323,101 @@ export function calculateKillRanges(results: DamageRangeNatureResult[], healthTh
         },
       };
     }, {});
+}
+
+function factorial(value: number, sum = 1): number {
+  if (!value || value <= 1) return sum;
+
+  return factorial(value - 1, sum * value);
+}
+
+interface RollValue {
+  value: number;
+  adjusted: number;
+  index: number;
+  subIndex: number;
+}
+
+export interface CombinedDamageOdds {
+  critCount: number;
+  odds: number;
+  binomialCoefficient: number;
+  successes: number;
+}
+
+interface CalculateCombinedDamageOptions {
+  /**
+   * Critical hits ignore negative offensive combat stages and positive defensive combat stages.
+   * If this is relevant, you can provide the rolls with neutral combat stages and they will be
+   * used to calculate damage only for critical hits.
+   */
+  critAdjustedValues?: (number[] | null)[];
+  /** The damage multiplier to use for a critical hit. */
+  critMultiplier?: number;
+  /** The denominator for the crit chance percent - 16 for Gen 6-, 24 for Gen 7+. */
+  critChanceDenominator?: number;
+}
+
+/**
+ * Determine the percentage of damage roll combinations that meet a threshold.
+ *
+ * @param rollSets - A list of the possible damage roll values for each attack.
+ * @param hpThreshold - The target HP.
+ * @param options - Additional options.
+ * @returns The number of successes, total number of trials, and binomial coefficient for each number of crits rolled.
+ */
+export function calculateCombinedDamage(
+  rollSets: number[][],
+  hpThreshold: number,
+  options: CalculateCombinedDamageOptions = {},
+): CombinedDamageOdds[] {
+  const valuesWithAdjustments: RollValue[][] = rollSets.map((rollSet, index) => (
+    rollSet.slice(0, rollSets[0]?.length).map((value, subIndex) => ({
+      value,
+      adjusted: options.critAdjustedValues?.[index]?.[subIndex] ?? value,
+      index,
+      subIndex,
+    }))
+  ));
+
+  const critResults = (Array.from(CartesianProduct.from(valuesWithAdjustments)) as RollValue[][]).reduce<number[][]>((critAcc, rolls) => [
+    ...critAcc,
+    range(0, rolls.length).reduce<number[]>((rollAcc, numCrits) => {
+      const combinations = numCrits === rolls.length + 1 ? [rolls] : Array.from(new Combination(rolls, numCrits));
+
+      const critSuccesses = combinations.reduce((combinationAcc, critValues) => {
+        const nonCritValues = rolls.filter(roll => !critValues.some(critRoll => critRoll.index === roll.index && critRoll.subIndex === roll.subIndex));
+
+        const nonCritDamage = nonCritValues.reduce((acc, { value }) => acc + value, 0);
+        const critDamage = critValues.reduce((acc, { value, adjusted }) => acc + Math.trunc((adjusted || value) * (options.critMultiplier ?? 1.5)), 0);
+
+        return combinationAcc + (nonCritDamage + critDamage >= hpThreshold ? 1 : 0);
+      }, 0);
+
+      return [
+        ...rollAcc,
+        critSuccesses,
+      ];
+    }, []),
+  ], []);
+
+  const trialSize = rollSets.length;
+  const critChance = 1 / (options.critChanceDenominator ?? 16);
+
+  const oddSets: CombinedDamageOdds[] = range(0, trialSize).map(numCrits => ({
+    critCount: numCrits,
+    odds: critChance ** numCrits * (1 - critChance) ** (trialSize - numCrits),
+    binomialCoefficient: factorial(trialSize) / (factorial(numCrits) * factorial(trialSize - numCrits)),
+    successes: 0,
+  }));
+
+  return critResults.reduce((acc, rollResults) => (
+    rollResults.reduce((totals, successes, index) => {
+      const updatedTotals = [...totals];
+
+      updatedTotals[index].successes = (totals[index].successes || 0) + successes;
+
+      return updatedTotals;
+    }, acc)
+  ), oddSets);
 }
