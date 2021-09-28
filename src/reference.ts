@@ -1,4 +1,4 @@
-export type Generation = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 'lgpe';
+export type Generation = number | 'lgpe';
 
 export const STATS = ['hp', 'attack', 'defense', 'spAttack', 'spDefense', 'speed'] as const;
 
@@ -13,15 +13,33 @@ export interface StatLine {
   speed: number;
 }
 
+/**
+ * The possible IVs for each nature modifier given the previously entered stats.
+ */
 export interface IVRangeSet {
-  negative: [number, number] | null,
-  neutral: [number, number] | null,
-  positive: [number, number] | null,
-  combined: [number, number] | null,
+  /** The possible IVs for a negative nature. */
+  negative: [number, number],
+  /** The possible IVs for a neutral nature. */
+  neutral: [number, number],
+  /** The possible IVs for a positive nature. */
+  positive: [number, number],
+  /** The lowest and highest IV possible across all possible natures. */
+  combined: [number, number],
 }
 
 export interface StatRange {
   stat: number;
   from: number;
   to: number;
+}
+
+export interface IVRange {
+  from: number;
+  to: number;
+}
+
+export interface IVRangeNatureSet {
+  negative?: IVRange;
+  neutral?: IVRange;
+  positive?: IVRange;
 }

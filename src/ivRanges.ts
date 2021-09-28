@@ -1,13 +1,27 @@
 import { ConfirmedNature, determinePossibleNatureTypesForStat, getPossibleNatureAdjustmentsForStat, NatureType, NATURE_MODIFIERS } from './nature';
-import { Generation, IVRangeSet, Stat, StatRange } from './reference';
+import { Generation, IVRangeSet, Stat, IVRange, IVRangeNatureSet } from './reference';
 import { calculateGen1Stat, calculateHP, calculateStat } from './stats';
 import { range, rangesOverlap } from './utils/utils';
 
 export interface StatValuePossibilitySet {
+  /** The full set of unique stat values that are possible across all IVs and natures */
   possible: number[];
+  /** The set of unique stat values that are possible given the calculated IV set and confirmed nature. */
   valid: number[];
 }
 
+/**
+ * Calculate the value of a stat.
+ *
+ * @param stat - The name of the stat.
+ * @param level - The current level of the Pokémon.
+ * @param baseStat - The base stat of the Pokémon.
+ * @param iv - The individual value of the Pokémon for the stat.
+ * @param ev - The effort value of the Pokémon for the stat.
+ * @param modifier - The nature modifier to apply to the stat.
+ * @param generation - The generation formula to use.
+ * @returns The calculated stat value.
+ */
 function calculateStatOrHP(stat: Stat, level: number, baseStat: number, iv: number, ev: number, modifier: number, generation: Generation): number {
   if (stat === 'hp') return calculateHP(level, baseStat, iv, ev, generation);
   if (generation <= 2) return calculateGen1Stat(level, baseStat, iv, ev);
@@ -15,6 +29,19 @@ function calculateStatOrHP(stat: Stat, level: number, baseStat: number, iv: numb
   return calculateStat(level, baseStat, iv, ev, modifier);
 }
 
+/**
+ * Get the list of possible stat values for a range of individual values given a nature modifier.
+ *
+ * @param stat - The name of the stat.
+ * @param level - The current level of the Pokémon.
+ * @param baseStat - The base stat of the Pokémon.
+ * @param minIV - The lowest individual value in the range.
+ * @param maxIV - The highest individual value in the range.
+ * @param ev - The effort value of the Pokémon for the stat.
+ * @param modifier - The nature modifier to apply to the stat.
+ * @param generation - The generation formula to use.
+ * @returns The list of calculated stat value.
+ */
 function calculatePossibleStatValuesForNature(
   stat: Stat,
   level: number,
@@ -22,20 +49,20 @@ function calculatePossibleStatValuesForNature(
   minIV: number,
   maxIV: number,
   ev: number,
-  possibleModifiers: number[],
+  modifier: number,
   generation: Generation,
 ): StatValuePossibilitySet {
-  const possibleValues = range(0, 31).flatMap(iv => (
-    possibleModifiers.map(modifier => calculateStatOrHP(stat, level, baseStat, iv, ev, modifier, generation))
+  const possibleValues = range(0, 31).map(iv => (
+    calculateStatOrHP(stat, level, baseStat, iv, ev, modifier, generation)
   ));
 
-  const validValues = range(minIV, maxIV).flatMap(iv => (
-    possibleModifiers.map(modifier => calculateStatOrHP(stat, level, baseStat, iv, ev, modifier, generation))
+  const validValues = range(minIV, maxIV).map(iv => (
+    calculateStatOrHP(stat, level, baseStat, iv, ev, modifier, generation)
   ));
 
   return {
-    possible: [...new Set(possibleValues)],
-    valid: [...new Set(validValues)],
+    possible: Array.from(new Set(possibleValues)),
+    valid: Array.from(new Set(validValues)),
   };
 }
 
@@ -45,7 +72,7 @@ function calculatePossibleStatValuesForNature(
  *
  * @param stat - The name of the stat to calculate.
  * @param level - The current level of the Pokémon.
- * @param ivRanges - The calculated IV range set from previously entered stats.
+ * @param ivRanges - The calculated IV range set for the relevant stat as calculated from previously entered stats.
  * @param confirmedNature - Any confirmed negative or positive nature data.
  * @param baseStat - The base stat of the Pokémon.
  * @param evs - The effort value of the Pokémon for the stat at the current level.
@@ -55,7 +82,7 @@ function calculatePossibleStatValuesForNature(
 export function calculateAllPossibleStatValues(
   stat: Stat,
   level: number,
-  ivRanges: Record<Stat, IVRangeSet>,
+  ivRanges: IVRangeSet,
   confirmedNature: ConfirmedNature,
   baseStat: number,
   evs: number,
@@ -64,11 +91,11 @@ export function calculateAllPossibleStatValues(
   let relevantModifiers = stat === 'hp' ? [NATURE_MODIFIERS[1]] : NATURE_MODIFIERS;
 
   const possibleNatureTypes = determinePossibleNatureTypesForStat(stat, confirmedNature);
-  
+
   relevantModifiers = relevantModifiers.filter(item => possibleNatureTypes.indexOf(item.key) !== -1);
 
-  return relevantModifiers.reduce<StatValuePossibilitySet>((combinedSet, { key, modifier }) => {
-    const values = ivRanges[stat][key];
+  const { possible, valid } = relevantModifiers.reduce<StatValuePossibilitySet>((combinedSet, { key, modifier }) => {
+    const values = ivRanges[key];
 
     if (!values) return combinedSet;
 
@@ -79,7 +106,7 @@ export function calculateAllPossibleStatValues(
       values[0],
       values[1],
       evs,
-      [modifier],
+      modifier,
       generation,
     );
 
@@ -88,6 +115,11 @@ export function calculateAllPossibleStatValues(
       valid: [...combinedSet.valid, ...calculatedValues.valid],
     };
   }, { possible: [], valid: [] } as StatValuePossibilitySet);
+
+  return {
+    possible: Array.from(new Set(possible)),
+    valid: Array.from(new Set(valid)),
+  };
 }
 
 interface CalculatePossibleIVRangeOptions {
@@ -170,20 +202,14 @@ export function calculatePossibleIVRange(
   };
 }
 
-export function isIVWithinValues(calculatedValue: StatRange, ivRange: [number, number] | null): boolean {
+function isIVWithinValues(calculatedValue: IVRange | undefined, ivRange: [number, number] | null): boolean {
   if (!calculatedValue) return false;
 
   return rangesOverlap([calculatedValue.from, calculatedValue.to], ivRange ?? [-1, -1]);
 }
 
-export interface CombinedIVResult {
-  negative: StatRange;
-  neutral: StatRange;
-  positive: StatRange
-}
-
-export function isIVWithinRange(
-  damageResult: CombinedIVResult,
+function isIVWithinRange(
+  damageResult: IVRangeNatureSet,
   [confirmedNegative, confirmedPositive]: ConfirmedNature,
   stat: Stat,
   ivRanges: IVRangeSet,
@@ -203,4 +229,31 @@ export function isIVWithinRange(
     neutral,
     positive,
   }).filter(([, value]) => value).some(([key]) => isIVWithinValues(damageResult[key as NatureType], ivRanges[key as NatureType]));
+}
+
+/**
+ * Filter a set of damage calculation results to only those that intersect with an IV range set.
+ *
+ * @param results - The damage calculation results.
+ * @param confirmedNature - The confirmed nature, if any.
+ * @param stat - The stat relevant to the filter.
+ * @param ivRanges - The calculated IV ranges.
+ * @return The relevant damage results.
+ */
+export function filterToStatRange<T extends IVRangeNatureSet>(
+  results: Record<string | number, T>,
+  confirmedNature: ConfirmedNature,
+  stat: Stat,
+  ivRanges: IVRangeSet,
+): Record<string | number, T> {
+  return Object.entries(results).reduce((acc, [key, value]) => {
+    if (isIVWithinRange(value, confirmedNature, stat, ivRanges)) {
+      return {
+        ...acc,
+        [key]: value,
+      };
+    }
+
+    return acc;
+  }, {} as Record<string | number, T>);
 }

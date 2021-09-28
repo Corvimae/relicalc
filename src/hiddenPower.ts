@@ -1,10 +1,10 @@
-import { CartesianProduct } from 'js-combinatorics/umd/combinatorics';
+import { CartesianProduct } from 'js-combinatorics';
 import { ConfirmedNature } from './nature';
 import { TypeName } from './pokemonTypes';
 import { IVRangeSet, Stat } from './reference';
 import { range } from './utils/utils';
 
-export const HIDDEN_POWER_TYPES: TypeName[] = [
+const HIDDEN_POWER_TYPES: TypeName[] = [
   'fighting',
   'flying',
   'poison',
@@ -68,6 +68,13 @@ function calculateHiddenPowerProbability(
     * calculateOddnessProbababilityOfStat(ivs.speed, 'speed', confirmedNature, speedOdd);
 }
 
+/**
+ * Calculate the most probable type of Hidden Power given the calculated possible IVs of a Pokémon.
+ *
+ * @param ivs - The calculated IV ranges.
+ * @param confirmedNature - The stats confirmed to be reduced and increased by the nature, respectively.
+ * @returns The most likely Hidden Power type given the possible IVs.
+ */
 export function calculateHiddenPowerType(
   ivs: Record<Stat, IVRangeSet>,
   confirmedNature: ConfirmedNature,

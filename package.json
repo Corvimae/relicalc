@@ -1,6 +1,6 @@
 {
-  "version": "0.1.0",
-  "license": "MIT",
+  "version": "1.0.2",
+  "license": "GPL-3.0-or-later",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "files": [
@@ -8,13 +8,13 @@
     "src"
   ],
   "engines": {
-    "node": ">=10"
+    "node": ">=12"
   },
   "scripts": {
     "start": "tsdx watch",
     "build": "tsdx build",
     "test": "tsdx test",
-    "lint": "tsdx lint",
+    "lint": "eslint src",
     "prepare": "tsdx build",
     "size": "size-limit",
     "analyze": "size-limit --why"
@@ -22,7 +22,7 @@
   "peerDependencies": {},
   "husky": {
     "hooks": {
-      "pre-commit": "tsdx lint"
+      "pre-commit": "eslint src"
     }
   },
   "name": "relicalc",
@@ -39,6 +39,7 @@
     }
   ],
   "devDependencies": {
+    "@babel/plugin-transform-modules-commonjs": "^7.15.4",
     "@size-limit/preset-small-lib": "^5.0.4",
     "@types/js-combinatorics": "^1.2.0",
     "@typescript-eslint/eslint-plugin": "^4.11.1",

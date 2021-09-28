@@ -130,7 +130,7 @@ interface TypeEffectivenesses {
   fourth: TypeName[];
 }
 
-export function moveEffectivenessTo(block: TypeEffectivenesses, defensiveType: TypeName, location: keyof TypeEffectivenesses | null): TypeEffectivenesses {
+function changeEffectivenessTo(block: TypeEffectivenesses, defensiveType: TypeName, location: keyof TypeEffectivenesses | null): TypeEffectivenesses {
   return Object.entries(block).reduce((acc, [key, value]) => {
     if (location === key) {
       return {
@@ -146,6 +146,13 @@ export function moveEffectivenessTo(block: TypeEffectivenesses, defensiveType: T
   }, {} as TypeEffectivenesses);
 }
 
+/**
+ * Get the defensive effectivenesses of an elemental type for a specific generation.
+ *
+ * @param type - The name of the type.
+ * @param generation - The generation type chart to use.
+ * @returns The list of weaknesses, resists, and immunities.
+ */
 export function getDefensiveEffectivenesses(type: TypeName | null, generation: Generation): TypeEffectivenesses {
   if (!type || !typeChart[type]) {
     return {
@@ -168,14 +175,14 @@ export function getDefensiveEffectivenesses(type: TypeName | null, generation: G
   // Apply type chart patches.
   if (generation < 6) {
     if (type === 'steel') {
-      chart = moveEffectivenessTo(moveEffectivenessTo(chart, 'ghost', 'half'), 'dark', 'half');
+      chart = changeEffectivenessTo(changeEffectivenessTo(chart, 'ghost', 'half'), 'dark', 'half');
     }
 
     if (generation < 2) {
-      if (type === 'poison') chart = moveEffectivenessTo(chart, 'bug', 'x2');
-      if (type === 'bug') chart = moveEffectivenessTo(chart, 'poison', 'x2');
-      if (type === 'psychic') chart = moveEffectivenessTo(chart, 'ghost', 'x0');
-      if (type === 'fire') chart = moveEffectivenessTo(chart, 'ice', 'half');
+      if (type === 'poison') chart = changeEffectivenessTo(chart, 'bug', 'x2');
+      if (type === 'bug') chart = changeEffectivenessTo(chart, 'poison', 'x2');
+      if (type === 'psychic') chart = changeEffectivenessTo(chart, 'ghost', 'x0');
+      if (type === 'fire') chart = changeEffectivenessTo(chart, 'ice', null);
     }
   }
 
@@ -204,6 +211,13 @@ function isFourth(type: TypeName, type1: TypeEffectivenesses, type2: TypeEffecti
   return type1.half.indexOf(type) !== -1 && type2.half.indexOf(type) !== -1;
 }
 
+/**
+ * Get the combined defensive effectivenesses of one or two elemental type for a specific generation.
+ *
+ * @param generation - The generation type chart to use.
+ * @param pokemonTypes - The types of the defending Pokémon.
+ * @returns The list of weaknesses, resists, and immunities.
+ */
 export function calculateCombinedDefensiveEffectivenesses(generation: Generation, ...pokemonTypes: TypeName[]): TypeEffectivenesses {
   const type1 = getDefensiveEffectivenesses(pokemonTypes[0] as TypeName, generation);
   const type2 = getDefensiveEffectivenesses(pokemonTypes[1] as TypeName, generation);
@@ -219,6 +233,14 @@ export function calculateCombinedDefensiveEffectivenesses(generation: Generation
   };
 }
 
+/**
+ * Calculate the effectiveness of a move against an opponent's typing.
+ *
+ * @param moveType - The type of the move being used.
+ * @param generation - The generation type chart to use.
+ * @param pokemonTypes - The types of the defending Pokémon.
+ * @returns The effectiveness multiplier of the move against the defender.
+ */
 export function calculateMoveEffectiveness(moveType: TypeName, generation: Generation, ...pokemonTypes: TypeName[]): number {
   const combinedEffectivness = calculateCombinedDefensiveEffectivenesses(generation, ...pokemonTypes);
 

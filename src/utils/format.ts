@@ -1,4 +1,4 @@
-import { Stat, StatRange } from './reference';
+import { Stat, IVRange, IVRangeNatureSet } from '../reference';
 
 export function formatDamageRange(values: number[]): string {
   const firstValue = values[0];
@@ -14,8 +14,8 @@ export function formatDamageRange(values: number[]): string {
   return `${lowExtreme ? `(${lowExtreme}) / ` : ''}${secondValue === secondToLastValue ? secondValue : `${secondValue}–${secondToLastValue}`}${highExtreme ? ` / (${highExtreme})` : ''}`;
 }
 
-export function formatIVRange(value: StatRange): string {
-  if (!value) return 'x';
+export function formatIVRange(value: IVRange | undefined): string {
+  if (!value || value.from === -1 || value.to === -1) return 'x';
   if (value.from === 0 && value.to === 31) return '0+';
 
   if (value.from === 0) return `${value.to}${value.to === 0 ? '' : '-'}`;
@@ -26,7 +26,7 @@ export function formatIVRange(value: StatRange): string {
   return `${value.from}–${value.to}`;
 }
 
-export function formatIVSplit(values: { negative: StatRange; neutral: StatRange; positive: StatRange }): string {
+export function formatIVRangeSet(values: IVRangeNatureSet): string {
   return `${formatIVRange(values.negative)} / ${formatIVRange(values.neutral)} / ${formatIVRange(values.positive)}`;
 }
 
