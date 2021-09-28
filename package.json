@@ -39,6 +39,7 @@
     }
   ],
   "devDependencies": {
+    "@babel/plugin-transform-modules-commonjs": "^7.15.4",
     "@size-limit/preset-small-lib": "^5.0.4",
     "@types/js-combinatorics": "^1.2.0",
     "@typescript-eslint/eslint-plugin": "^4.11.1",
