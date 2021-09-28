@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Corvimae/relicalc/actions/workflows/main.yml/badge.svg)](https://github.com/Corvimae/relicalc/actions/workflows/main.yml)
 
-![dr relicanth, phd in mathematics](/relicalc_small.png)
+![dr relicanth, phd in mathematics](/relicalc.png)
 
 relicalc is [Ranger](https://github.com/corvimae/pokemon-ranger)'s Pokémon math calculation code as a standalone Node (12+) library. It has all the math-y stuff from Ranger without any of that pesky UI nonsense, including:
 
