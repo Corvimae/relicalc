@@ -110,6 +110,8 @@ export function calculateAllPossibleStatValues(
       generation,
     );
 
+    // console.log(stat, calculatedValues);
+
     return {
       possible: [...combinedSet.possible, ...calculatedValues.possible],
       valid: [...combinedSet.valid, ...calculatedValues.valid],
