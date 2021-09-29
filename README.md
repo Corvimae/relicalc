@@ -1,7 +1,7 @@
 # relicalc
 
 [![CI](https://github.com/Corvimae/relicalc/actions/workflows/main.yml/badge.svg)](https://github.com/Corvimae/relicalc/actions/workflows/main.yml)
-![npm](https://img.shields.io/npm/v/relicalc)
+[![npm](https://img.shields.io/npm/v/relicalc)](https://www.npmjs.com/package/relicalc)
 
 ![dr relicanth, phd in mathematics](/relicalc_small.png)
 
