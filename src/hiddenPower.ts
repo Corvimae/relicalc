@@ -33,11 +33,11 @@ function getUniqueIVValuesInRangeSet(ivRange: IVRangeSet, stat: Stat, [negativeN
   if (negativeNature === stat) return getIVValuesInSection(ivRange.negative);
   if (positiveNature === stat) return getIVValuesInSection(ivRange.positive);
 
-  return [...new Set([
+  return Array.from(new Set([
     ...(negativeNature === null ? getIVValuesInSection(ivRange.negative) : []),
     ...getIVValuesInSection(ivRange.neutral),
     ...(positiveNature === null ? getIVValuesInSection(ivRange.positive) : []),
-  ])];
+  ]));
 }
 
 function calculateOddnessProbababilityOfStat(ivRange: IVRangeSet, stat: Stat, confirmedNature: ConfirmedNature, odd: boolean): number {
@@ -79,14 +79,14 @@ export function calculateHiddenPowerType(
   ivs: Record<Stat, IVRangeSet>,
   confirmedNature: ConfirmedNature,
 ): TypeName | null {
-  const probabilities = ([...new CartesianProduct(
+  const probabilities = (Array.from(new CartesianProduct(
     [false, true],
     [false, true],
     [false, true],
     [false, true],
     [false, true],
     [false, true],
-  )] as StatLSBSet[]).map(combination => ({
+  )) as StatLSBSet[]).map(combination => ({
     combination,
     probability: calculateHiddenPowerProbability(ivs, confirmedNature, ...combination),
   }));
