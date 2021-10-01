@@ -233,8 +233,8 @@ export function calculateDamageRanges({
 }
 
 function mergeStatRanges(a: IVRange | undefined, b: IVRange): IVRange {
-  if (!a) return b;
-  if (!b) return a;
+  if (!a || a.from === -1 || a.to === -1) return b;
+  if (!b || b.from === -1 || b.to === -1) return a;
 
   return {
     from: Math.min(a.from, b.from),
