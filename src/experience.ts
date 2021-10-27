@@ -81,10 +81,10 @@ function calculateExperienceShareMultiplier(
       
     return 2 * expShareCount;
   }
+  
+  if (expShareEnabled || generation === 'lgpe') return 2;
 
   if (participated) return 1;
-
-  if (expShareEnabled || generation >= 8 || generation === 'lgpe') return 2;
 
   return 1;
 }
@@ -160,12 +160,27 @@ export function calculateExperienceGain(
     return multiplyAllForGeneration(Math.floor(multiplier1 * multiplier2) + Math.fround(1.0), [tradeMultiplier, luckyEggMultiplier], generation);
   }
 
-  if (generation >= 7 || generation === 'lgpe') {
+  if (generation >= 7) {
     // I'm not sure if Gen 8 actually uses this formula...
     const multiplier1 = Math.floor(multiplyAllForGeneration(baseExperience * opponentLevel, [evolutionMultiplier], generation) / (Math.fround(5.0) * expShareMultiplier));
     const multiplier2 = gamefreakPowerOfTwoPointFive((Math.fround(2.0) * opponentLevel + Math.fround(10.0)) / (opponentLevel + level + Math.fround(10.0)));
 
-    return multiplyAllForGeneration(Math.floor(multiplier1 * multiplier2) + Math.fround(1.0), [tradeMultiplier, luckyEggMultiplier, affectionMultiplier], generation);
+    return multiplyAllForGeneration(Math.floor(multiplier1 * multiplier2), [tradeMultiplier, luckyEggMultiplier, affectionMultiplier], generation);
+  }
+
+  if (generation === 'lgpe') {
+    return Math.floor(multiplyAllForGeneration(
+      Math.floor(baseExperience * opponentLevel) + 1,
+      [
+        1 / 15,
+        wildMultiplier,
+        tradeMultiplier,
+        luckyEggMultiplier,
+        affectionMultiplier,
+        evolutionMultiplier,
+      ],
+      'lgpe',
+    ));
   }
 
   return Math.floor(integerMultiply(
