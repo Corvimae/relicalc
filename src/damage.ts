@@ -96,6 +96,8 @@ interface AllCalculateDamageRangesParameters {
   friendship: number;
   /** Is the defender protected by a screen move? */
   screen: boolean;
+  /** Is the attacker using the relevent choice item? */
+  choiceItem: boolean;
   /** An additional multiplier to apply to the base power of the move. */
   otherPowerModifier: number;
 }
@@ -129,6 +131,7 @@ export function calculateDamageRanges({
   opponentCombatStages = 0,
   friendship,
   screen = false,
+  choiceItem = false,
   otherPowerModifier = 1,
 }: CalculateDamageRangesParameters): DamageRangeNatureResult[] {
   if (!level) throw new Error('level parameter is required.');
@@ -176,8 +179,10 @@ export function calculateDamageRanges({
     return {
       name: natureModifierData.name,
       rangeSegments: rangeSegments.map(rangeSegment => {
-        const playerStatAdjusted = applyCombatStages(rangeSegment.stat, combatStages);
-        const opponentStatAdjusted = applyCombatStages(opponentStat, opponentCombatStages);
+        const playerChoiceModifier = offensiveMode && choiceItem ? 1.5 : 1;
+        const opponentChoiceModifier = !offensiveMode && choiceItem ? 1.5 : 1;
+        const playerStatAdjusted = applyCombatStages(rangeSegment.stat * playerChoiceModifier, combatStages);
+        const opponentStatAdjusted = applyCombatStages(opponentStat * opponentChoiceModifier, opponentCombatStages);
 
         const stabAndTypeEffectivenessModifier = [
           stab ? 1.5 : 1,
