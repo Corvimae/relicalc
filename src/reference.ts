@@ -1,4 +1,4 @@
-export type Generation = number | 'lgpe' | 'bdsp';
+export type Generation = number | 'lgpe';
 
 export const STATS = ['hp', 'attack', 'defense', 'spAttack', 'spDefense', 'speed'] as const;
 
