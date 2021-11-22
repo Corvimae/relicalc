@@ -167,6 +167,13 @@ export function calculateExperienceGain(
 
     return multiplyAllForGeneration(Math.floor(multiplier1 * multiplier2), [tradeMultiplier, luckyEggMultiplier, affectionMultiplier], generation);
   }
+  
+  if (generation === 'bdsp') {
+    const multiplier1 = Math.floor(multiplyAllForGeneration(baseExperience * opponentLevel, [evolutionMultiplier], generation) / (Math.fround(5.0) * expShareMultiplier));
+    const multiplier2 = gamefreakPowerOfTwoPointFive((Math.fround(2.0) * opponentLevel + Math.fround(10.0)) / (opponentLevel + level + Math.fround(10.0)));
+
+    return multiplyAllForGeneration(Math.floor(multiplier1 * multiplier2) + 1, [tradeMultiplier, luckyEggMultiplier, affectionMultiplier], generation);
+  }
 
   if (generation === 'lgpe') {
     return Math.floor(multiplyAllForGeneration(
