@@ -98,6 +98,10 @@ interface AllCalculateDamageRangesParameters {
   screen: boolean;
   /** Is the attacker using the relevent choice item? */
   choiceItem: boolean;
+  /** A modifier to apply to the owned Pokémon's relevant stat. */
+  statModifier: number;
+    /** A modifier to apply to the opponent Pokémon's relevant stat. */
+  opponentStatModifier: number;
   /** An additional multiplier to apply to the base power of the move. */
   otherPowerModifier: number;
 }
@@ -132,6 +136,8 @@ export function calculateDamageRanges({
   friendship,
   screen = false,
   choiceItem = false,
+  statModifier = 1,
+  opponentStatModifier = 1,
   otherPowerModifier = 1,
 }: CalculateDamageRangesParameters): DamageRangeNatureResult[] {
   if (!level) throw new Error('level parameter is required.');
@@ -181,8 +187,8 @@ export function calculateDamageRanges({
       rangeSegments: rangeSegments.map(rangeSegment => {
         const playerChoiceModifier = offensiveMode && choiceItem ? 1.5 : 1;
         const opponentChoiceModifier = !offensiveMode && choiceItem ? 1.5 : 1;
-        const playerStatAdjusted = applyCombatStages(rangeSegment.stat * playerChoiceModifier, combatStages);
-        const opponentStatAdjusted = applyCombatStages(opponentStat * opponentChoiceModifier, opponentCombatStages);
+        const playerStatAdjusted = applyCombatStages(Math.floor(rangeSegment.stat * playerChoiceModifier * statModifier), combatStages);
+        const opponentStatAdjusted = applyCombatStages(Math.floor(opponentStat * opponentChoiceModifier * opponentStatModifier), opponentCombatStages);
 
         const stabAndTypeEffectivenessModifier = [
           stab ? 1.5 : 1,
