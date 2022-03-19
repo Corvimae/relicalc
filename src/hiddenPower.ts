@@ -30,8 +30,8 @@ function getIVValuesInSection(ivSet: [number, number] | null): number[] {
 }
 
 function getUniqueIVValuesInRangeSet(ivRange: IVRangeSet, stat: Stat, [negativeNature, positiveNature]: ConfirmedNature): number[] {
-  if (negativeNature === stat) return getIVValuesInSection(ivRange.negative);
-  if (positiveNature === stat) return getIVValuesInSection(ivRange.positive);
+  if (negativeNature === stat && positiveNature !== stat) return getIVValuesInSection(ivRange.negative);
+  if (positiveNature === stat && negativeNature !== stat) return getIVValuesInSection(ivRange.positive);
 
   return Array.from(new Set([
     ...(negativeNature === null ? getIVValuesInSection(ivRange.negative) : []),
