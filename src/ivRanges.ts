@@ -97,7 +97,7 @@ export function calculateAllPossibleStatValues(
   const { possible, valid } = relevantModifiers.reduce<StatValuePossibilitySet>((combinedSet, { key, modifier }) => {
     const values = ivRanges[key];
 
-    if (!values) return combinedSet;
+    if (!values || values[0] === -1) return combinedSet;
 
     const calculatedValues = calculatePossibleStatValuesForNature(
       stat,
@@ -109,8 +109,6 @@ export function calculateAllPossibleStatValues(
       modifier,
       generation,
     );
-
-    // console.log(stat, calculatedValues);
 
     return {
       possible: [...combinedSet.possible, ...calculatedValues.possible],
