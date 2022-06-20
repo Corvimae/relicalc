@@ -98,6 +98,8 @@ interface AllCalculateDamageRangesParameters {
   screen: boolean;
   /** Is the attacker using the relevent choice item? */
   choiceItem: boolean;
+  /** Does the attacker have the ability Adaptability? */
+  adaptability: boolean;
   /** A modifier to apply to the owned Pokémon's relevant stat. */
   statModifier: number;
     /** A modifier to apply to the opponent Pokémon's relevant stat. */
@@ -136,6 +138,7 @@ export function calculateDamageRanges({
   friendship,
   screen = false,
   choiceItem = false,
+  adaptability = false,
   statModifier = 1,
   opponentStatModifier = 1,
   otherPowerModifier = 1,
@@ -190,8 +193,9 @@ export function calculateDamageRanges({
         const playerStatAdjusted = applyCombatStages(Math.floor(rangeSegment.stat * playerChoiceModifier * statModifier), combatStages);
         const opponentStatAdjusted = applyCombatStages(Math.floor(opponentStat * opponentChoiceModifier * opponentStatModifier), opponentCombatStages);
 
+        const stabModifier = adaptability ? 2 : 1.5;
         const stabAndTypeEffectivenessModifier = [
-          stab ? 1.5 : 1,
+          stab ? stabModifier : 1,
           typeEffectiveness,
         ];
 
