@@ -211,7 +211,7 @@ export function calculateDamageRanges({
           torrent && generation >= 5 ? offensiveStat * 1.5 : offensiveStat,
           defensiveStat,
           [
-            ...(generation === 4 ? [
+            ...(generation <= 4 ? [
               screenModifier,
               multiTarget ? getMultiTargetModifier(generation) : 1,
               weatherBoosted ? 1.5 : 1,
