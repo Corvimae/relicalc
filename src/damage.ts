@@ -100,6 +100,8 @@ interface AllCalculateDamageRangesParameters {
   choiceItem: boolean;
   /** Does the attacker have the ability Adaptability? */
   adaptability: boolean;
+  /** Is the attacker terastallized and using a move of their Tera type? */
+  terastallized: boolean;
   /** A modifier to apply to the owned Pokémon's relevant stat. */
   statModifier: number;
     /** A modifier to apply to the opponent Pokémon's relevant stat. */
@@ -139,6 +141,7 @@ export function calculateDamageRanges({
   screen = false,
   choiceItem = false,
   adaptability = false,
+  terastallized = false,
   statModifier = 1,
   opponentStatModifier = 1,
   otherPowerModifier = 1,
@@ -193,7 +196,7 @@ export function calculateDamageRanges({
         const playerStatAdjusted = applyCombatStages(Math.floor(rangeSegment.stat * playerChoiceModifier * statModifier), combatStages);
         const opponentStatAdjusted = applyCombatStages(Math.floor(opponentStat * opponentChoiceModifier * opponentStatModifier), opponentCombatStages);
 
-        const stabModifier = adaptability ? 2 : 1.5;
+        const stabModifier = adaptability || (generation === 9 && terastallized) ? 2 : 1.5;
         const stabAndTypeEffectivenessModifier = [
           stab ? stabModifier : 1,
           typeEffectiveness,
