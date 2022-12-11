@@ -197,9 +197,15 @@ export function calculateDamageRanges({
         const opponentStatAdjusted = applyCombatStages(Math.floor(opponentStat * opponentChoiceModifier * opponentStatModifier), opponentCombatStages);
 
         const stabModifier = adaptability || (generation === 9 && terastallized) ? 2 : 1.5;
+        let typeEffectivenessMultiplierSet = [typeEffectiveness];
+
+        if (typeEffectiveness === 1.1) {
+          typeEffectivenessMultiplierSet = generation === 4 ? [0.5, 2] : [1];
+        }
+
         const stabAndTypeEffectivenessModifier = [
           stab ? stabModifier : 1,
-          typeEffectiveness,
+          ...typeEffectivenessMultiplierSet,
         ];
 
         const critMultiplier = generation <= 5 ? 2.0 : 1.5;
