@@ -5,6 +5,16 @@ import { Generation, StatRange, IVRange, IVRangeNatureSet } from './reference';
 import { formatDamageRange } from './utils/format';
 import { range } from './utils/utils';
 
+function isGenerationAtLeast(generation: Generation, minimum: number): boolean {
+  if (generation === 'lgpe') return minimum <= 7;
+
+  return generation >= minimum;
+}
+function isGenerationAtMost(generation: Generation, maximum: number): boolean {
+  if (generation === 'lgpe') return maximum >= 7;
+
+  return generation <= maximum;
+}
 /**
  * Calculate the possible damage values that a move can roll.
  *
@@ -74,6 +84,8 @@ interface AllCalculateDamageRangesParameters {
   movePower: number;
   /** Did the move critical hit? */
   criticalHit: boolean;
+  /** Is this a doubles battle? */
+  doubles: boolean;
   /** Is the attacker affected by Torrent, Overgrow, or Blaze? */
   torrent: boolean;
   /** Does the move target more than one Pokémon and is the encounter a double or triple battle? */
@@ -128,6 +140,7 @@ export function calculateDamageRanges({
   offensiveMode = true,
   movePower,
   criticalHit = false,
+  doubles = false,
   torrent = false,
   multiTarget = false,
   weatherBoosted = false,
@@ -208,29 +221,29 @@ export function calculateDamageRanges({
           ...typeEffectivenessMultiplierSet,
         ];
 
-        const critMultiplier = generation <= 5 ? 2.0 : 1.5;
+        const critMultiplier = isGenerationAtLeast(generation, 5) ? 2.0 : 1.5;
         const offensiveStat = offensiveMode ? playerStatAdjusted : opponentStatAdjusted;
         const defensiveStat = offensiveMode ? opponentStatAdjusted : playerStatAdjusted;
-        const baseScreenMultiplier = multiTarget ? (2 / 3) : 0.5;
+        const baseScreenMultiplier = doubles ? (2 / 3) : 0.5;
         const screenModifier = screen && !criticalHit ? baseScreenMultiplier : 1;
 
         const damageValues = calculateDamageValues(
           offensiveMode ? level : (opponentLevel ?? 0),
-          torrent && generation <= 4 ? movePower * 1.5 : movePower,
-          torrent && generation >= 5 ? offensiveStat * 1.5 : offensiveStat,
+          torrent && (generation !== 'lgpe' && generation <= 4) ? movePower * 1.5 : movePower,
+          torrent && (generation === 'lgpe' || generation >= 5) ? offensiveStat * 1.5 : offensiveStat,
           defensiveStat,
           [
-            ...(generation <= 4 ? [
+            ...(isGenerationAtMost(generation, 4) ? [
               screenModifier,
-              multiTarget ? getMultiTargetModifier(generation) : 1,
+              multiTarget && doubles ? getMultiTargetModifier(generation) : 1,
               weatherBoosted ? 1.5 : 1,
               weatherReduced ? 0.5 : 1,
             ] : []),
             otherPowerModifier,
           ],
           [
-            ...((generation >= 5 || generation === 'lgpe') ? [
-              multiTarget ? getMultiTargetModifier(generation) : 1,
+            ...(isGenerationAtLeast(generation, 5) ? [
+              multiTarget && doubles ? getMultiTargetModifier(generation) : 1,
               weatherBoosted ? 1.5 : 1,
               weatherReduced ? 0.5 : 1,
             ] : []),
@@ -239,7 +252,7 @@ export function calculateDamageRanges({
           ],
           [
             ...(generation === 3 ? [] : stabAndTypeEffectivenessModifier),
-            ...(generation >= 5 ? [screenModifier] : []),
+            ...(isGenerationAtLeast(generation, 5) ? [screenModifier] : []),
             otherModifier,
           ],
         );
