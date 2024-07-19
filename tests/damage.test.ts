@@ -1016,6 +1016,7 @@ describe('calculateDamageRanges (compacted)', () => {
       ...basePrinplupOptions,
       movePower: 95,
       multiTarget: true,
+      doubles: true,
     }))).toStrictEqual(expandDamageRanges([
       {
         statFrom: 41,
@@ -1065,6 +1066,7 @@ describe('calculateDamageRanges (compacted)', () => {
       ...basePrinplupOptions,
       movePower: 95,
       multiTarget: true,
+      doubles: true,
       generation: 5,
     }))).toStrictEqual(expandDamageRanges([
       {
