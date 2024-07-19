@@ -221,7 +221,7 @@ export function calculateDamageRanges({
           ...typeEffectivenessMultiplierSet,
         ];
 
-        const critMultiplier = isGenerationAtLeast(generation, 5) ? 2.0 : 1.5;
+        const critMultiplier = isGenerationAtMost(generation, 5) ? 2.0 : 1.5;
         const offensiveStat = offensiveMode ? playerStatAdjusted : opponentStatAdjusted;
         const defensiveStat = offensiveMode ? opponentStatAdjusted : playerStatAdjusted;
         const baseScreenMultiplier = doubles ? (2 / 3) : 0.5;
